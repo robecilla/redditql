@@ -2,7 +2,7 @@ import "reflect-metadata";
 
 import express from "express";
 import cors from "cors";
-import redis from "redis";
+import Redis from "ioredis";
 import session from "express-session";
 import connectRedis from "connect-redis";
 import { PrismaClient } from "@prisma/client";
@@ -18,7 +18,7 @@ async function main() {
   const app = express();
 
   const RedisStore = connectRedis(session);
-  const redisClient = redis.createClient();
+  const redis = new Redis();
 
   app.use(
     cors({
@@ -31,7 +31,7 @@ async function main() {
     session({
       name: COOKIE_NAME,
       store: new RedisStore({
-        client: redisClient,
+        client: redis,
         disableTouch: true,
       }),
       cookie: {
@@ -40,7 +40,7 @@ async function main() {
         secure: isProd,
       },
       saveUninitialized: false,
-      secret: "lhdakjfhaskjdhfajksdf",
+      secret: "lhdakjfhaskjdhfajksdf", // literally just stroke the keyboard for now
       resave: false,
     })
   );
@@ -54,6 +54,7 @@ async function main() {
       prisma,
       req,
       res,
+      redis,
     }),
   });
 

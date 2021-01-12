@@ -3,12 +3,12 @@ import { useRouter } from "next/router";
 import { Form, Formik } from "formik";
 import { Wrapper } from "../components/Wrapper";
 import InputField from "../components/InputField";
-import { Button, Text, Flex } from "@chakra-ui/react";
+import { Button, Text, Flex, Link } from "@chakra-ui/react";
 import { useLoginMutation } from "../generated/graphql";
 import toError from "../utils/toError";
 import { withUrqlClient } from "next-urql";
 import { createUrqlClient } from "../utils/createUrqlClient";
-import Link from "next/link";
+import NextLink from "next/link";
 
 type Props = {};
 
@@ -24,7 +24,7 @@ const Login: React.FC<Props> = ({}) => {
           if (response.data.login.errors) {
             setErrors(toError(response.data.login.errors));
           } else if (response.data.login.user) {
-            router.push("/");
+            await router.push("/");
           }
         }}
       >
@@ -46,7 +46,15 @@ const Login: React.FC<Props> = ({}) => {
                 Login
               </Button>
               <Text fontSize="xs">
-                New? Go ahead and <Link href="/register">register</Link>
+                New? Go ahead and{" "}
+                <NextLink href="/register">
+                  <Link>register</Link>
+                </NextLink>
+              </Text>
+              <Text ml="auto" fontSize="xs">
+                <NextLink href="/forgot-password">
+                  <Link>Forgot password?</Link>
+                </NextLink>
               </Text>
             </Flex>
           </Form>
