@@ -9,16 +9,19 @@ generator client {
 
 model Post {
   id        Int      @default(autoincrement()) @id
+  title     String
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  Int      // relation scalar field  (used in the `@relation` attribute above)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  title     String
 }
 
 model User {
-  id        Int      @default(autoincrement()) @id
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  username  String @unique
-  email     String @unique
+  id        Int         @default(autoincrement()) @id
+  username  String      @unique
+  email     String      @unique
   password  String
+  posts     Post[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 }
