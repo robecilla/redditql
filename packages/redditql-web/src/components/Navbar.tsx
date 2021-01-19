@@ -35,6 +35,11 @@ const Navbar: React.FC<Props> = ({}) => {
       )}
       {!data?.me && (
         <Box>
+          <Link href="/create-post">
+            <Button colorScheme="teal" mr="4">
+              Create post
+            </Button>
+          </Link>
           <Link href="/register">
             <Button colorScheme="teal" mr="4">
               Register

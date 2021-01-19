@@ -24,7 +24,7 @@ const Login: React.FC<Props> = ({}) => {
           if (response.data.login.errors) {
             setErrors(toError(response.data.login.errors));
           } else if (response.data.login.user) {
-            await router.push("/");
+            await router.push((router.query.redirect as string) || "/");
           }
         }}
       >

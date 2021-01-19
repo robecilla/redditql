@@ -1,6 +1,25 @@
-import { Arg, Ctx, ID, Mutation, Query, Resolver } from "type-graphql";
+import {
+  Arg,
+  Ctx,
+  Field,
+  ID,
+  InputType,
+  Mutation,
+  Query,
+  Resolver,
+  UseMiddleware,
+} from "type-graphql";
 import { Post } from "../entities/Post";
 import { Context } from "../types";
+import { isAuthenticated } from "../middleware/isAuthenticated";
+
+@InputType()
+class PostInput {
+  @Field()
+  title: string;
+  @Field()
+  content: string;
+}
 
 @Resolver()
 export class PostResolver {
@@ -22,12 +41,16 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
+  @UseMiddleware(isAuthenticated)
   createPost(
-    @Arg("title") title: string,
-    @Ctx() { prisma }: Context
+    @Arg("input") input: PostInput,
+    @Ctx() { prisma, req }: Context
   ): Promise<Post> {
     return prisma.post.create({
-      data: { title },
+      data: {
+        ...input,
+        author: { connect: { id: parseInt(req.session.userId) } },
+      },
     });
   }
 
