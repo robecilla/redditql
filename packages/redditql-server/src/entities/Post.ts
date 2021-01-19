@@ -15,6 +15,6 @@ export class Post {
   @Field()
   points!: number;
 
-  @Field()
+  @Field(() => User)
   author!: User;
 }
