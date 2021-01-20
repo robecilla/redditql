@@ -20,6 +20,11 @@ const Navbar: React.FC<Props> = ({}) => {
         </Link>
       </Box>
       <Spacer />
+      <Link href="/create-post">
+        <Button colorScheme="teal" mr="4">
+          Create post
+        </Button>
+      </Link>
       {data?.me && (
         <>
           <Text>{data.me.username}</Text>
@@ -35,11 +40,6 @@ const Navbar: React.FC<Props> = ({}) => {
       )}
       {!data?.me && (
         <Box>
-          <Link href="/create-post">
-            <Button colorScheme="teal" mr="4">
-              Create post
-            </Button>
-          </Link>
           <Link href="/register">
             <Button colorScheme="teal" mr="4">
               Register
