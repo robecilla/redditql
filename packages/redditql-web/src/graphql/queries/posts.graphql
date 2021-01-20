@@ -1,6 +1,7 @@
-query Posts {
-    posts {
+query Posts($limit: Int!, $cursor: Int) {
+    posts(limit: $limit, cursor: $cursor) {
         id
         title
+        createdAt
     }
 }

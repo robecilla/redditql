@@ -4,6 +4,7 @@ import {
   Field,
   ID,
   InputType,
+  Int,
   Mutation,
   Query,
   Resolver,
@@ -24,8 +25,25 @@ class PostInput {
 @Resolver()
 export class PostResolver {
   @Query(() => [Post])
-  posts(@Ctx() { prisma }: Context): Promise<Post[]> {
-    return prisma.post.findMany();
+  posts(
+    @Arg("limit", () => Int) limit: number,
+    @Arg("cursor", () => Int, { nullable: true }) cursor: number | null,
+    @Ctx() { prisma }: Context
+  ): Promise<Post[]> {
+    const query = {
+      take: Math.min(50, limit), // cap at 50 max results
+      orderBy: {
+        createdAt: "desc",
+      },
+    };
+
+    if (cursor) {
+      Object.assign(query, {
+        cursor: { id: cursor },
+      });
+    }
+
+    return prisma.post.findMany(query);
   }
 
   @Query(() => Post, { nullable: true })
