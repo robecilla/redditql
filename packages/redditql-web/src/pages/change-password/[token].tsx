@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import { NextPage } from "next";
-import { Wrapper } from "../../components/Wrapper";
 import { Form, Formik } from "formik";
 import toError from "../../utils/toError";
 import InputField from "../../components/InputField";
@@ -10,6 +8,7 @@ import { useRouter } from "next/router";
 import { withUrqlClient } from "next-urql";
 import { createUrqlClient } from "../../utils/createUrqlClient";
 import NextLink from "next/link";
+import { Layout } from "../../components/Layout";
 
 const ChangePassword = () => {
   const router = useRouter();
@@ -17,7 +16,7 @@ const ChangePassword = () => {
   const [, changePassword] = useChangePasswordMutation();
   const [tokenError, setTokenError] = useState("");
   return (
-    <Wrapper variant="small">
+    <Layout>
       {tokenError && (
         <Alert status="error">
           <AlertDescription>
@@ -59,7 +58,7 @@ const ChangePassword = () => {
           </Form>
         )}
       </Formik>
-    </Wrapper>
+    </Layout>
   );
 };
 
