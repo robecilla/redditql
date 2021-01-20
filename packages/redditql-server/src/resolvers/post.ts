@@ -2,12 +2,14 @@ import {
   Arg,
   Ctx,
   Field,
+  FieldResolver,
   ID,
   InputType,
   Int,
   Mutation,
   Query,
   Resolver,
+  Root,
   UseMiddleware,
 } from "type-graphql";
 import { Post } from "../entities/Post";
@@ -22,8 +24,17 @@ class PostInput {
   content: string;
 }
 
-@Resolver()
+@Resolver(Post)
 export class PostResolver {
+  @FieldResolver(() => String)
+  contentExcerpt(@Root() root: Post) {
+    const { content } = root;
+    const limit = 200; // characters
+    return content.length > limit
+      ? `${content.substring(0, limit)}...`
+      : content;
+  }
+
   @Query(() => [Post])
   posts(
     @Arg("limit", () => Int) limit: number,

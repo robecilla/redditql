@@ -3,5 +3,6 @@ query Posts($limit: Int!, $cursor: Int) {
         id
         title
         createdAt
+        contentExcerpt
     }
 }
