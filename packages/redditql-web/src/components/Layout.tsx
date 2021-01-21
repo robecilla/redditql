@@ -7,7 +7,7 @@ export const Layout: React.FC<{}> = ({ children }) => {
     <>
       <Navbar />
       <Center>
-        <Box w={800}>{children}</Box>
+        <Box>{children}</Box>
       </Center>
     </>
   );
