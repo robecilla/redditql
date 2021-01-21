@@ -7,6 +7,7 @@ import {
   InputType,
   Int,
   Mutation,
+  ObjectType,
   Query,
   Resolver,
   Root,
@@ -24,6 +25,14 @@ class PostInput {
   content: string;
 }
 
+@ObjectType()
+class PaginatedPosts {
+  @Field(() => [Post])
+  posts: Post[];
+  @Field()
+  hasMore: boolean;
+}
+
 @Resolver(Post)
 export class PostResolver {
   @FieldResolver(() => String)
@@ -35,14 +44,16 @@ export class PostResolver {
       : content;
   }
 
-  @Query(() => [Post])
-  posts(
+  @Query(() => PaginatedPosts)
+  async posts(
     @Arg("limit", () => Int) limit: number,
     @Arg("cursor", () => Int, { nullable: true }) cursor: number | null,
     @Ctx() { prisma }: Context
-  ): Promise<Post[]> {
+  ): Promise<PaginatedPosts> {
+    const realLimit = Math.min(50, limit);
+    const realLimitPlusOne = realLimit + 1;
     const query = {
-      take: Math.min(50, limit), // cap at 50 max results
+      take: realLimitPlusOne, // cap at 50 max results
       orderBy: {
         createdAt: "desc",
       },
@@ -54,7 +65,12 @@ export class PostResolver {
       });
     }
 
-    return prisma.post.findMany(query);
+    const posts = await prisma.post.findMany(query);
+
+    return {
+      posts: posts.slice(0, realLimit),
+      hasMore: posts.length === realLimitPlusOne,
+    };
   }
 
   @Query(() => Post, { nullable: true })
