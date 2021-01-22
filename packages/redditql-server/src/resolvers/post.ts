@@ -57,6 +57,9 @@ export class PostResolver {
       orderBy: {
         createdAt: "desc",
       },
+      include: {
+        author: true,
+      },
     };
 
     if (cursor) {
