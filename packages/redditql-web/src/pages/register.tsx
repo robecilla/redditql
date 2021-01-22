@@ -47,14 +47,15 @@ const Register: React.FC<Props> = ({}) => {
               name="password"
               type="password"
             />
-            <Flex mt={4} align="center">
-              <Button isLoading={isSubmitting} type="submit" colorScheme="teal">
-                Register
-              </Button>
-              <Text fontSize="xs">
-                Already an user? Go ahead and <Link href="/login">login</Link>
-              </Text>
-            </Flex>
+            <br />
+            <Button
+              isLoading={isSubmitting}
+              type="submit"
+              colorScheme="teal"
+              isFullWidth
+            >
+              Register
+            </Button>
           </Form>
         )}
       </Formik>

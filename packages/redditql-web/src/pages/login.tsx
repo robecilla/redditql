@@ -45,12 +45,6 @@ const Login: React.FC<Props> = ({}) => {
               <Button isLoading={isSubmitting} type="submit" colorScheme="teal">
                 Login
               </Button>
-              <Text fontSize="xs">
-                New? Go ahead and{" "}
-                <NextLink href="/register">
-                  <Link>register</Link>
-                </NextLink>
-              </Text>
               <Text ml="auto" fontSize="xs">
                 <NextLink href="/forgot-password">
                   <Link>Forgot password?</Link>
