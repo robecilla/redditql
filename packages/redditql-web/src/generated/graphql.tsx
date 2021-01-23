@@ -54,12 +54,13 @@ export type User = {
   id: Scalars['ID'];
   username: Scalars['String'];
   email: Scalars['String'];
-  password: Scalars['String'];
   posts: Array<Post>;
 };
 
 export type Mutation = {
   __typename?: 'Mutation';
+  upVote: Scalars['Boolean'];
+  downVote: Scalars['Boolean'];
   createPost: Post;
   updatePost: Post;
   deletePost: Post;
@@ -68,6 +69,16 @@ export type Mutation = {
   register: UserResponse;
   login: UserResponse;
   logout: Scalars['Boolean'];
+};
+
+
+export type MutationUpVoteArgs = {
+  postId: Scalars['Float'];
+};
+
+
+export type MutationDownVoteArgs = {
+  postId: Scalars['Float'];
 };
 
 
@@ -249,6 +260,10 @@ export type PostsQuery = (
     & { posts: Array<(
       { __typename?: 'Post' }
       & Pick<Post, 'id' | 'title' | 'createdAt' | 'contentExcerpt'>
+      & { author: (
+        { __typename?: 'User' }
+        & UserFragment
+      ) }
     )> }
   ) }
 );
@@ -359,10 +374,13 @@ export const PostsDocument = gql`
       title
       createdAt
       contentExcerpt
+      author {
+        ...User
+      }
     }
   }
 }
-    `;
+    ${UserFragmentDoc}`;
 
 export function usePostsQuery(options: Omit<Urql.UseQueryArgs<PostsQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<PostsQuery>({ query: PostsDocument, ...options });
