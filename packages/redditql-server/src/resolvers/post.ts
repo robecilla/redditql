@@ -44,6 +44,45 @@ export class PostResolver {
       : content;
   }
 
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuthenticated)
+  async upVote(@Arg("postId") postId: number, @Ctx() { req, prisma }: Context) {
+    const { userId } = req.session;
+    await PostResolver.vote(prisma, userId, postId, true);
+
+    return true;
+  }
+
+  private static async vote(
+    prisma,
+    userId: any,
+    postId: number,
+    vote: boolean
+  ) {
+    await prisma.updoot.create({
+      data: {
+        userId,
+        postId,
+        vote,
+      },
+    });
+
+    const operator = vote ? "+" : "-";
+    await prisma.$executeRaw`update "Post" set "points" = "points" ${operator} 1 where id = ${postId}`;
+  }
+
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuthenticated)
+  async downVote(
+    @Arg("postId") postId: number,
+    @Ctx() { req, prisma }: Context
+  ) {
+    const { userId } = req.session;
+    await PostResolver.vote(prisma, userId, postId, false);
+
+    return true;
+  }
+
   @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
