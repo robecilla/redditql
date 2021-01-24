@@ -1,0 +1,3 @@
+mutation Updoot($postId: Int!) {
+    updoot(postId: $postId)
+}

@@ -16,6 +16,7 @@ import {
 import { Post } from "../entities/Post";
 import { Context } from "../types";
 import { isAuthenticated } from "../middleware/isAuthenticated";
+import { Updoot } from "../entities/Updoot";
 
 @InputType()
 class PostInput {
@@ -44,9 +45,18 @@ export class PostResolver {
       : content;
   }
 
+  @FieldResolver(() => Boolean, { nullable: true })
+  vote(@Root() root: Post, @Ctx() { req }: Context) {
+    const { updoots } = root;
+    return updoots.find((updoot) => updoot.userId === req.session.userId)?.vote;
+  }
+
   @Mutation(() => Boolean)
   @UseMiddleware(isAuthenticated)
-  async upVote(@Arg("postId") postId: number, @Ctx() { req, prisma }: Context) {
+  async updoot(
+    @Arg("postId", () => Int) postId: number,
+    @Ctx() { req, prisma }: Context
+  ) {
     const { userId } = req.session;
     await PostResolver.vote(prisma, userId, postId, true);
 
@@ -59,22 +69,59 @@ export class PostResolver {
     postId: number,
     vote: boolean
   ) {
-    await prisma.updoot.create({
-      data: {
-        userId,
-        postId,
-        vote,
+    const updoot = await prisma.updoot.findUnique({
+      where: {
+        postId_userId: {
+          postId,
+          userId,
+        },
       },
     });
 
-    const operator = vote ? "+" : "-";
-    await prisma.$executeRaw`update "Post" set "points" = "points" ${operator} 1 where id = ${postId}`;
+    if (updoot && updoot.vote !== vote) {
+      const updateUpdoot = prisma.updoot.update({
+        where: {
+          postId_userId: {
+            postId,
+            userId,
+          },
+        },
+        data: {
+          vote,
+        },
+      });
+
+      let updatePoints;
+      if (vote) {
+        updatePoints = prisma.$executeRaw`update "Post" set "points" = "points" + 2 where id = ${postId}`;
+      } else {
+        updatePoints = prisma.$executeRaw`update "Post" set "points" = "points" - 2 where id = ${postId}`;
+      }
+
+      await prisma.$transaction([updateUpdoot, updatePoints]);
+    } else if (!updoot) {
+      const createUpdoot = prisma.updoot.create({
+        data: {
+          userId,
+          postId,
+          vote,
+        },
+      });
+
+      let updatePoints;
+      if (vote) {
+        updatePoints = prisma.$executeRaw`update "Post" set "points" = "points" + 1 where id = ${postId}`;
+      } else {
+        updatePoints = prisma.$executeRaw`update "Post" set "points" = "points" - 1 where id = ${postId}`;
+      }
+      await prisma.$transaction([createUpdoot, updatePoints]);
+    }
   }
 
   @Mutation(() => Boolean)
   @UseMiddleware(isAuthenticated)
-  async downVote(
-    @Arg("postId") postId: number,
+  async downdoot(
+    @Arg("postId", () => Int) postId: number,
     @Ctx() { req, prisma }: Context
   ) {
     const { userId } = req.session;
@@ -98,6 +145,7 @@ export class PostResolver {
       },
       include: {
         author: true,
+        updoots: true,
       },
     };
 
@@ -123,6 +171,9 @@ export class PostResolver {
     return prisma.post.findUnique({
       where: {
         id: Number(id),
+      },
+      include: {
+        updoots: true,
       },
     });
   }

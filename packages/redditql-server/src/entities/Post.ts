@@ -1,5 +1,6 @@
 import { ObjectType, Field, ID } from "type-graphql";
 import { User } from "./User";
+import { Updoot } from "./Updoot";
 
 @ObjectType()
 export class Post {
@@ -14,6 +15,9 @@ export class Post {
 
   @Field()
   points!: number;
+
+  @Field(() => [Updoot])
+  updoots!: Updoot[];
 
   @Field(() => User)
   author!: User;

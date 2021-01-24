@@ -1,0 +1,3 @@
+mutation Downdoot($postId: Int!) {
+    downdoot(postId: $postId)
+}

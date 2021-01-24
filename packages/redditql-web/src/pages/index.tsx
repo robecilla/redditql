@@ -4,6 +4,7 @@ import { usePostsQuery } from "../generated/graphql";
 import { withUrqlClient } from "next-urql";
 import { createUrqlClient } from "../utils/createUrqlClient";
 import { Layout } from "../components/Layout";
+import UpdootSection from "../components/UpdootSection";
 
 const Index = () => {
   const [variables, setVariables] = useState({ limit: 10, cursor: null });
@@ -19,17 +20,28 @@ const Index = () => {
       {posts && (
         <>
           <Stack spacing={8}>
-            {posts.map(
-              ({ id, title, contentExcerpt, author: { username } }) => (
+            {posts.map((post) => {
+              const {
+                id,
+                title,
+                contentExcerpt,
+                author: { username },
+              } = post;
+              return (
                 <Box key={id} p={5} shadow="md" borderWidth="1px">
                   <Flex>
-                    <Heading fontSize="xl">{title}</Heading>
-                    <Text ml={4}>posted by {username}</Text>
+                    <UpdootSection post={post} />
+                    <Box ml={4}>
+                      <Flex>
+                        <Heading fontSize="xl">{title}</Heading>
+                        <Text ml={4}>posted by {username}</Text>
+                      </Flex>
+                      <Text mt={4}>{contentExcerpt}</Text>
+                    </Box>
                   </Flex>
-                  <Text mt={4}>{contentExcerpt}</Text>
                 </Box>
-              )
-            )}
+              );
+            })}
           </Stack>
           <br />
           {hasMore && (

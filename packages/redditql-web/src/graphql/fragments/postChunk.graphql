@@ -1,0 +1,9 @@
+fragment PostChunk on Post {
+    id
+    title
+    createdAt
+    contentExcerpt
+    points
+    vote
+    author { ...User }
+}

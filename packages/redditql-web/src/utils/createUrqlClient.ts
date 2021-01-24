@@ -2,18 +2,21 @@ import {
   dedupExchange,
   Exchange,
   fetchExchange,
+  gql,
   stringifyVariables,
 } from "urql";
-import { cacheExchange, Resolver } from "@urql/exchange-graphcache";
+import { cacheExchange, Resolver, Variables } from "@urql/exchange-graphcache";
 import {
   LoginMutation,
   MeDocument,
   MeQuery,
   RegisterMutation,
+  UpdootMutationVariables,
 } from "../generated/graphql";
 import { betterUpdateQuery } from "./betterUpdateQuery";
 import { pipe, tap } from "wonka";
 import Router from "next/router";
+import { isServer } from "./isServer";
 
 const errorExchange: Exchange = ({ forward }) => (ops$) => {
   return pipe(
@@ -66,10 +69,47 @@ const cursorPagination = (): Resolver => {
   };
 };
 
-export const createUrqlClient = (ssrExchange) => ({
+function vote(args: UpdootMutationVariables, cache, vote: boolean) {
+  const { postId } = args;
+  const data = cache.readFragment(
+    gql`
+      fragment _ on Post {
+        id
+        points
+        vote
+      }
+    `,
+    { id: postId }
+  );
+  if (data) {
+    if (data.vote === vote) return;
+    const hasVote = data.vote !== null;
+    const newPoints = vote
+      ? (data.points as number) + (!hasVote ? 1 : 2)
+      : (data.points as number) - (!hasVote ? 1 : 2);
+    cache.writeFragment(
+      gql`
+        fragment _ on Post {
+          id
+          points
+          vote
+        }
+      `,
+      { id: postId, points: newPoints, vote }
+    );
+  }
+}
+
+export const createUrqlClient = (ssrExchange, ctx) => ({
   url: "http://localhost:4000/graphql",
   fetchOptions: {
     credentials: "include" as const,
+    // forward cookie from browser to graphql server
+    headers: isServer()
+      ? {
+          cookie: ctx.req.headers.cookie,
+        }
+      : undefined,
   },
   exchanges: [
     dedupExchange,
@@ -84,6 +124,8 @@ export const createUrqlClient = (ssrExchange) => ({
       },
       updates: {
         Mutation: {
+          updoot: (_result, args, cache) => vote(args, cache, true),
+          downdoot: (_result, args, cache) => vote(args, cache, false),
           createPost: (_result, args, cache) => {
             cache
               .inspectFields("Query")

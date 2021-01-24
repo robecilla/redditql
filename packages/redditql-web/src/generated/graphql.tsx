@@ -44,9 +44,21 @@ export type Post = {
   title: Scalars['String'];
   content: Scalars['String'];
   points: Scalars['Float'];
+  updoots: Array<Updoot>;
   author: User;
   createdAt: Scalars['String'];
   contentExcerpt: Scalars['String'];
+  vote?: Maybe<Scalars['Boolean']>;
+};
+
+export type Updoot = {
+  __typename?: 'Updoot';
+  vote: Scalars['Float'];
+  userId: Scalars['ID'];
+  user: User;
+  postId: Scalars['ID'];
+  post: Post;
+  createdAt: Scalars['String'];
 };
 
 export type User = {
@@ -59,8 +71,8 @@ export type User = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  upVote: Scalars['Boolean'];
-  downVote: Scalars['Boolean'];
+  updoot: Scalars['Boolean'];
+  downdoot: Scalars['Boolean'];
   createPost: Post;
   updatePost: Post;
   deletePost: Post;
@@ -72,13 +84,13 @@ export type Mutation = {
 };
 
 
-export type MutationUpVoteArgs = {
-  postId: Scalars['Float'];
+export type MutationUpdootArgs = {
+  postId: Scalars['Int'];
 };
 
 
-export type MutationDownVoteArgs = {
-  postId: Scalars['Float'];
+export type MutationDowndootArgs = {
+  postId: Scalars['Int'];
 };
 
 
@@ -147,6 +159,15 @@ export type ErrorFragment = (
   & Pick<FieldError, 'field' | 'message'>
 );
 
+export type PostChunkFragment = (
+  { __typename?: 'Post' }
+  & Pick<Post, 'id' | 'title' | 'createdAt' | 'contentExcerpt' | 'points' | 'vote'>
+  & { author: (
+    { __typename?: 'User' }
+    & UserFragment
+  ) }
+);
+
 export type UserFragment = (
   { __typename?: 'User' }
   & Pick<User, 'id' | 'username'>
@@ -188,6 +209,16 @@ export type CreatePostMutation = (
     { __typename?: 'Post' }
     & Pick<Post, 'id' | 'content'>
   ) }
+);
+
+export type DowndootMutationVariables = Exact<{
+  postId: Scalars['Int'];
+}>;
+
+
+export type DowndootMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'downdoot'>
 );
 
 export type ForgotPasswordMutationVariables = Exact<{
@@ -235,6 +266,16 @@ export type RegisterMutation = (
   ) }
 );
 
+export type UpdootMutationVariables = Exact<{
+  postId: Scalars['Int'];
+}>;
+
+
+export type UpdootMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'updoot'>
+);
+
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -259,11 +300,7 @@ export type PostsQuery = (
     & Pick<PaginatedPosts, 'hasMore'>
     & { posts: Array<(
       { __typename?: 'Post' }
-      & Pick<Post, 'id' | 'title' | 'createdAt' | 'contentExcerpt'>
-      & { author: (
-        { __typename?: 'User' }
-        & UserFragment
-      ) }
+      & PostChunkFragment
     )> }
   ) }
 );
@@ -274,6 +311,19 @@ export const UserFragmentDoc = gql`
   username
 }
     `;
+export const PostChunkFragmentDoc = gql`
+    fragment PostChunk on Post {
+  id
+  title
+  createdAt
+  contentExcerpt
+  points
+  vote
+  author {
+    ...User
+  }
+}
+    ${UserFragmentDoc}`;
 export const ErrorFragmentDoc = gql`
     fragment Error on FieldError {
   field
@@ -313,6 +363,15 @@ export const CreatePostDocument = gql`
 
 export function useCreatePostMutation() {
   return Urql.useMutation<CreatePostMutation, CreatePostMutationVariables>(CreatePostDocument);
+};
+export const DowndootDocument = gql`
+    mutation Downdoot($postId: Int!) {
+  downdoot(postId: $postId)
+}
+    `;
+
+export function useDowndootMutation() {
+  return Urql.useMutation<DowndootMutation, DowndootMutationVariables>(DowndootDocument);
 };
 export const ForgotPasswordDocument = gql`
     mutation ForgotPassword($email: String!) {
@@ -354,6 +413,15 @@ export const RegisterDocument = gql`
 export function useRegisterMutation() {
   return Urql.useMutation<RegisterMutation, RegisterMutationVariables>(RegisterDocument);
 };
+export const UpdootDocument = gql`
+    mutation Updoot($postId: Int!) {
+  updoot(postId: $postId)
+}
+    `;
+
+export function useUpdootMutation() {
+  return Urql.useMutation<UpdootMutation, UpdootMutationVariables>(UpdootDocument);
+};
 export const MeDocument = gql`
     query Me {
   me {
@@ -370,17 +438,11 @@ export const PostsDocument = gql`
   posts(limit: $limit, cursor: $cursor) {
     hasMore
     posts {
-      id
-      title
-      createdAt
-      contentExcerpt
-      author {
-        ...User
-      }
+      ...PostChunk
     }
   }
 }
-    ${UserFragmentDoc}`;
+    ${PostChunkFragmentDoc}`;
 
 export function usePostsQuery(options: Omit<Urql.UseQueryArgs<PostsQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<PostsQuery>({ query: PostsDocument, ...options });

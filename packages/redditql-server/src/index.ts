@@ -14,7 +14,10 @@ import { COOKIE_NAME, isProd } from "./constants";
 import { Context } from "./types";
 
 async function main() {
-  const prisma = new PrismaClient();
+  const prisma = new PrismaClient({
+    log: ["query", "warn"],
+  });
+
   const app = express();
 
   const RedisStore = connectRedis(session);
