@@ -1,6 +1,14 @@
-import { Text, Box, Button, Flex, Heading, Spacer } from "@chakra-ui/react";
+import {
+  Text,
+  Box,
+  Button,
+  Flex,
+  Heading,
+  Spacer,
+  Link,
+} from "@chakra-ui/react";
 import React from "react";
-import Link from "next/link";
+import NextLink from "next/link";
 import { useLogoutMutation, useMeQuery } from "../generated/graphql";
 import { isServer } from "../utils/isServer";
 
@@ -15,16 +23,18 @@ const Navbar: React.FC<Props> = ({}) => {
   return (
     <Flex p={8} align="center">
       <Box>
-        <Link href="/">
-          <Heading size="md">redditql</Heading>
-        </Link>
+        <NextLink href="/">
+          <Link>
+            <Heading size="lg">redditql</Heading>
+          </Link>
+        </NextLink>
       </Box>
       <Spacer />
-      <Link href="/create-post">
+      <NextLink href="/create-post">
         <Button colorScheme="teal" mr="4">
           Create post
         </Button>
-      </Link>
+      </NextLink>
       {data?.me && (
         <>
           <Text>{data.me.username}</Text>
@@ -40,14 +50,14 @@ const Navbar: React.FC<Props> = ({}) => {
       )}
       {!data?.me && (
         <Box>
-          <Link href="/register">
+          <NextLink href="/register">
             <Button colorScheme="teal" mr="4">
               Register
             </Button>
-          </Link>
-          <Link href="/login">
+          </NextLink>
+          <NextLink href="/login">
             <Button colorScheme="teal">Login</Button>
-          </Link>
+          </NextLink>
         </Box>
       )}
     </Flex>
