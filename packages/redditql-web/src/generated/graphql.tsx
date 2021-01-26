@@ -159,6 +159,15 @@ export type ErrorFragment = (
   & Pick<FieldError, 'field' | 'message'>
 );
 
+export type PostFragment = (
+  { __typename?: 'Post' }
+  & Pick<Post, 'id' | 'title' | 'content' | 'points' | 'vote' | 'createdAt'>
+  & { author: (
+    { __typename?: 'User' }
+    & UserFragment
+  ) }
+);
+
 export type PostChunkFragment = (
   { __typename?: 'Post' }
   & Pick<Post, 'id' | 'title' | 'createdAt' | 'contentExcerpt' | 'points' | 'vote'>
@@ -287,6 +296,19 @@ export type MeQuery = (
   )> }
 );
 
+export type PostQueryVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type PostQuery = (
+  { __typename?: 'Query' }
+  & { post?: Maybe<(
+    { __typename?: 'Post' }
+    & PostFragment
+  )> }
+);
+
 export type PostsQueryVariables = Exact<{
   limit: Scalars['Int'];
   cursor?: Maybe<Scalars['Int']>;
@@ -311,6 +333,19 @@ export const UserFragmentDoc = gql`
   username
 }
     `;
+export const PostFragmentDoc = gql`
+    fragment Post on Post {
+  id
+  title
+  content
+  author {
+    ...User
+  }
+  points
+  vote
+  createdAt
+}
+    ${UserFragmentDoc}`;
 export const PostChunkFragmentDoc = gql`
     fragment PostChunk on Post {
   id
@@ -432,6 +467,17 @@ export const MeDocument = gql`
 
 export function useMeQuery(options: Omit<Urql.UseQueryArgs<MeQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<MeQuery>({ query: MeDocument, ...options });
+};
+export const PostDocument = gql`
+    query Post($id: ID!) {
+  post(id: $id) {
+    ...Post
+  }
+}
+    ${PostFragmentDoc}`;
+
+export function usePostQuery(options: Omit<Urql.UseQueryArgs<PostQueryVariables>, 'query'> = {}) {
+  return Urql.useQuery<PostQuery>({ query: PostDocument, ...options });
 };
 export const PostsDocument = gql`
     query Posts($limit: Int!, $cursor: Int) {

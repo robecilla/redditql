@@ -3,12 +3,13 @@ import { TriangleDownIcon, TriangleUpIcon } from "@chakra-ui/icons";
 import React from "react";
 import {
   PostChunkFragment,
+  PostFragment,
   useDowndootMutation,
   useUpdootMutation,
 } from "../generated/graphql";
 
 type Props = {
-  post: PostChunkFragment;
+  post: PostFragment | PostChunkFragment;
 };
 
 const UpdootSection: React.FC<Props> = ({ post: { id, points, vote } }) => {

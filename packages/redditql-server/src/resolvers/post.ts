@@ -16,7 +16,6 @@ import {
 import { Post } from "../entities/Post";
 import { Context } from "../types";
 import { isAuthenticated } from "../middleware/isAuthenticated";
-import { Updoot } from "../entities/Updoot";
 
 @InputType()
 class PostInput {
@@ -173,6 +172,7 @@ export class PostResolver {
         id: Number(id),
       },
       include: {
+        author: true,
         updoots: true,
       },
     });

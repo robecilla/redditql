@@ -1,0 +1,9 @@
+fragment Post on Post {
+    id
+    title
+    content
+    author {...User}
+    points
+    vote
+    createdAt
+}
