@@ -30,6 +30,7 @@ const Index = () => {
         <>
           <Stack spacing={8}>
             {posts.map((post) => {
+              if (!post) return null;
               const {
                 id,
                 title,

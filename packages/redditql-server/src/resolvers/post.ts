@@ -204,13 +204,17 @@ export class PostResolver {
     });
   }
 
-  @Mutation(() => Post)
-  deletePost(
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuthenticated)
+  async deletePost(
     @Arg("id", () => ID) id: typeof ID,
-    @Ctx() { prisma }: Context
-  ): Promise<Post> {
-    return prisma.post.delete({
-      where: { id: Number(id) },
-    });
+    @Ctx() { req, prisma }: Context
+  ) {
+    const { userId } = req.session;
+
+    // using raw query because prisma does no let me use where and
+    return await prisma.$executeRaw<Post>`delete from "Post" where "id" = ${Number(
+      id
+    )} and "authorId" = ${userId}`;
   }
 }
