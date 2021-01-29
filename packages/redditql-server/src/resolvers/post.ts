@@ -192,29 +192,41 @@ export class PostResolver {
     });
   }
 
-  @Mutation(() => Post)
-  updatePost(
-    @Arg("id", () => ID) id: typeof ID,
+  @Mutation(() => Post, { nullable: true })
+  @UseMiddleware(isAuthenticated)
+  async updatePost(
+    @Arg("id", () => Int) id: number,
     @Arg("title") title: string,
-    @Ctx() { prisma }: Context
-  ): Promise<Post> {
-    return prisma.post.update({
-      where: { id: Number(id) },
-      data: { title },
+    @Arg("content") content: string,
+    @Ctx() { req, prisma }: Context
+  ): Promise<Post | null> {
+    const { userId } = req.session;
+
+    // using raw query because prisma does no let me use where and
+    const updatePost = await prisma.$executeRaw`
+    update "Post" 
+    set title = ${title}, content = ${content}
+    where "id" = ${id} and "authorId" = ${userId}`;
+
+    if (!updatePost) {
+      return null;
+    }
+
+    return await prisma.post.findUnique({
+      where: { id },
+      include: { author: true },
     });
   }
 
   @Mutation(() => Boolean)
   @UseMiddleware(isAuthenticated)
   async deletePost(
-    @Arg("id", () => ID) id: typeof ID,
+    @Arg("id", () => Int) id: number,
     @Ctx() { req, prisma }: Context
   ) {
     const { userId } = req.session;
 
     // using raw query because prisma does no let me use where and
-    return await prisma.$executeRaw<Post>`delete from "Post" where "id" = ${Number(
-      id
-    )} and "authorId" = ${userId}`;
+    return await prisma.$executeRaw`delete from "Post" where "id" = ${id} and "authorId" = ${userId}`;
   }
 }

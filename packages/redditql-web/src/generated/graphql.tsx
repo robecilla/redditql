@@ -74,7 +74,7 @@ export type Mutation = {
   updoot: Scalars['Boolean'];
   downdoot: Scalars['Boolean'];
   createPost: Post;
-  updatePost: Post;
+  updatePost?: Maybe<Post>;
   deletePost: Scalars['Boolean'];
   changePassword: UserResponse;
   forgotPassword: Scalars['Boolean'];
@@ -100,13 +100,14 @@ export type MutationCreatePostArgs = {
 
 
 export type MutationUpdatePostArgs = {
+  content: Scalars['String'];
   title: Scalars['String'];
-  id: Scalars['ID'];
+  id: Scalars['Int'];
 };
 
 
 export type MutationDeletePostArgs = {
-  id: Scalars['ID'];
+  id: Scalars['Int'];
 };
 
 
@@ -221,7 +222,7 @@ export type CreatePostMutation = (
 );
 
 export type DeletePostMutationVariables = Exact<{
-  id: Scalars['ID'];
+  id: Scalars['Int'];
 }>;
 
 
@@ -283,6 +284,21 @@ export type RegisterMutation = (
     { __typename?: 'UserResponse' }
     & UserResponseFragment
   ) }
+);
+
+export type UpdatePostMutationVariables = Exact<{
+  id: Scalars['Int'];
+  title: Scalars['String'];
+  content: Scalars['String'];
+}>;
+
+
+export type UpdatePostMutation = (
+  { __typename?: 'Mutation' }
+  & { updatePost?: Maybe<(
+    { __typename?: 'Post' }
+    & PostFragment
+  )> }
 );
 
 export type UpdootMutationVariables = Exact<{
@@ -410,7 +426,7 @@ export function useCreatePostMutation() {
   return Urql.useMutation<CreatePostMutation, CreatePostMutationVariables>(CreatePostDocument);
 };
 export const DeletePostDocument = gql`
-    mutation DeletePost($id: ID!) {
+    mutation DeletePost($id: Int!) {
   deletePost(id: $id)
 }
     `;
@@ -466,6 +482,17 @@ export const RegisterDocument = gql`
 
 export function useRegisterMutation() {
   return Urql.useMutation<RegisterMutation, RegisterMutationVariables>(RegisterDocument);
+};
+export const UpdatePostDocument = gql`
+    mutation UpdatePost($id: Int!, $title: String!, $content: String!) {
+  updatePost(id: $id, title: $title, content: $content) {
+    ...Post
+  }
+}
+    ${PostFragmentDoc}`;
+
+export function useUpdatePostMutation() {
+  return Urql.useMutation<UpdatePostMutation, UpdatePostMutationVariables>(UpdatePostDocument);
 };
 export const UpdootDocument = gql`
     mutation Updoot($postId: Int!) {
