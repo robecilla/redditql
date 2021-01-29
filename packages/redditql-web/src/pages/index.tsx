@@ -42,14 +42,12 @@ const Index = () => {
                   <Flex>
                     <UpdootSection post={post} />
                     <Box ml={4}>
-                      <Flex>
-                        <NextLink href="/post/[id]" as={`/post/${id}`}>
-                          <Link>
-                            <Heading fontSize="xl">{title}</Heading>
-                          </Link>
-                        </NextLink>
-                        <Text ml={4}>posted by {username}</Text>
-                      </Flex>
+                      <Text fontSize="sm">Posted by {username}</Text>
+                      <NextLink href="/post/[id]" as={`/post/${id}`}>
+                        <Link>
+                          <Heading fontSize="xl">{title}</Heading>
+                        </Link>
+                      </NextLink>
                       <Text mt={4}>{contentExcerpt}</Text>
                     </Box>
                   </Flex>
