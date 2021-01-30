@@ -12,7 +12,7 @@ import {
 } from "type-graphql";
 import { hash, verify } from "argon2";
 import { User } from "../entities/User";
-import { Context } from "src/types";
+import { Context } from "../types";
 import { COOKIE_NAME, FORGET_PASSWORD_PREFIX } from "../constants";
 import { validateRegister } from "../utils/validateRegister";
 import { sendEmail } from "../utils/sendEmail";
@@ -112,7 +112,6 @@ export class UserResolver {
     // invalidate change password token after it's used
     await redis.del(redisKey);
 
-    // @ts-ignore
     // log in user
     req.session.userId = user.id;
 
@@ -145,9 +144,9 @@ export class UserResolver {
 
   @Query(() => User, { nullable: true })
   me(@Ctx() { prisma, req }: Context): Promise<User | null> | null {
-    // @ts-ignore
-    const userId = req.session.userId;
+    const { userId } = req.session;
     if (!userId) return null;
+    // @ts-ignore
     return prisma.user.findUnique({ where: { id: userId } });
   }
 
@@ -181,7 +180,6 @@ export class UserResolver {
       },
     });
 
-    // @ts-ignore
     req.session.userId = user.id;
 
     return {
@@ -199,7 +197,8 @@ export class UserResolver {
     const user = await prisma.user.findUnique(
       isEmail
         ? { where: { email: usernameOrEmail } }
-        : { where: { username: usernameOrEmail } }
+        : // @ts-ignore
+          { where: { username: usernameOrEmail } }
     );
     if (!user) {
       return {

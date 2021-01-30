@@ -8,3 +8,9 @@ export type Context = {
   res: Response;
   redis: Redis;
 };
+
+declare module "express-session" {
+  interface Session {
+    userId: number;
+  }
+}

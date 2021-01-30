@@ -16,6 +16,7 @@ import {
 import { Post } from "../entities/Post";
 import { Context } from "../types";
 import { isAuthenticated } from "../middleware/isAuthenticated";
+import { PrismaClient } from "@prisma/client";
 
 @InputType()
 class PostInput {
@@ -46,8 +47,14 @@ export class PostResolver {
 
   @FieldResolver(() => Boolean, { nullable: true })
   vote(@Root() root: Post, @Ctx() { req }: Context) {
+    const { userId } = req.session;
     const { updoots } = root;
-    return updoots.find((updoot) => updoot.userId === req.session.userId)?.vote;
+
+    const updoot = updoots?.find((updoot) => updoot.userId === userId);
+
+    if (!updoot) return null;
+
+    return updoot.vote;
   }
 
   @Mutation(() => Boolean)
@@ -63,7 +70,7 @@ export class PostResolver {
   }
 
   private static async vote(
-    prisma,
+    prisma: PrismaClient,
     userId: any,
     postId: number,
     vote: boolean
@@ -154,9 +161,11 @@ export class PostResolver {
       });
     }
 
+    // @ts-ignore
     const posts = await prisma.post.findMany(query);
 
     return {
+      // @ts-ignore
       posts: posts.slice(0, realLimit),
       hasMore: posts.length === realLimitPlusOne,
     };
@@ -167,6 +176,7 @@ export class PostResolver {
     @Arg("id", () => ID) id: typeof ID,
     @Ctx() { prisma }: Context
   ): Promise<Post | null> {
+    // @ts-ignore
     return prisma.post.findUnique({
       where: {
         id: Number(id),
@@ -184,10 +194,12 @@ export class PostResolver {
     @Arg("input") input: PostInput,
     @Ctx() { prisma, req }: Context
   ): Promise<Post> {
+    const { userId } = req.session;
+    // @ts-ignore
     return prisma.post.create({
       data: {
         ...input,
-        author: { connect: { id: parseInt(req.session.userId) } },
+        author: { connect: { id: userId } },
       },
     });
   }

@@ -17,11 +17,11 @@ export class Post {
   points!: number;
 
   @Field(() => [Updoot])
-  updoots!: Updoot[];
+  updoots?: Updoot[];
 
   @Field(() => User)
   author!: User;
 
   @Field()
-  createdAt: string;
+  createdAt!: Date;
 }
