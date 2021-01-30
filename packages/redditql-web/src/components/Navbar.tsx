@@ -11,10 +11,12 @@ import React from "react";
 import NextLink from "next/link";
 import { useLogoutMutation, useMeQuery } from "../generated/graphql";
 import { isServer } from "../utils/isServer";
+import { useRouter } from "next/router";
 
 type Props = {};
 
 const Navbar: React.FC<Props> = ({}) => {
+  const router = useRouter();
   const [{ data, fetching }] = useMeQuery({
     pause: isServer(),
   });
@@ -42,7 +44,10 @@ const Navbar: React.FC<Props> = ({}) => {
             ml={4}
             variant="link"
             colorScheme="black"
-            onClick={() => logout()}
+            onClick={async () => {
+              await logout();
+              router.reload();
+            }}
           >
             Logout
           </Button>

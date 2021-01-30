@@ -5,7 +5,7 @@ import {
   gql,
   stringifyVariables,
 } from "urql";
-import { cacheExchange, Resolver, Variables } from "@urql/exchange-graphcache";
+import { cacheExchange, Resolver, Cache } from "@urql/exchange-graphcache";
 import {
   DeletePostMutationVariables,
   LoginMutation,
@@ -70,7 +70,7 @@ const cursorPagination = (): Resolver => {
   };
 };
 
-function vote(args: UpdootMutationVariables, cache, vote: boolean) {
+function vote(args: UpdootMutationVariables, cache: Cache, vote: boolean) {
   const { postId } = args;
   const data = cache.readFragment(
     gql`
@@ -99,6 +99,13 @@ function vote(args: UpdootMutationVariables, cache, vote: boolean) {
       { id: postId, points: newPoints, vote }
     );
   }
+}
+
+function invalidateAllPosts(cache: Cache) {
+  cache
+    .inspectFields("Query")
+    .filter((info) => info.fieldName === "posts")
+    .forEach((fi) => cache.invalidate("Query", "posts", fi.arguments));
 }
 
 export const createUrqlClient = (ssrExchange, ctx) => ({
@@ -131,14 +138,7 @@ export const createUrqlClient = (ssrExchange, ctx) => ({
           },
           updoot: (_result, args, cache) => vote(args, cache, true),
           downdoot: (_result, args, cache) => vote(args, cache, false),
-          createPost: (_result, args, cache) => {
-            cache
-              .inspectFields("Query")
-              .filter((info) => info.fieldName === "posts")
-              .forEach((fi) =>
-                cache.invalidate("Query", "posts", fi.arguments)
-              );
-          },
+          createPost: (_result, args, cache) => invalidateAllPosts(cache),
           logout: (_result, args, cache) => {
             betterUpdateQuery<LoginMutation, MeQuery>(
               cache,
@@ -152,6 +152,7 @@ export const createUrqlClient = (ssrExchange, ctx) => ({
             );
           },
           login: (_result, args, cache) => {
+            invalidateAllPosts(cache);
             betterUpdateQuery<LoginMutation, MeQuery>(
               cache,
               {
