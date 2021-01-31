@@ -6,9 +6,9 @@ This is a full-stack reddit like application that constists of:
 
 Nginx is sitting in front which proxies requests to Node.js GraphQL server that uses Prisma 2 to talk to a Postgresql database running in a container.
 
-A Redis image is also there to manage sessions.
+A Redis container is also running to manage sessions.
 
-Dokku manages all the images as well as deployments.
+Dokku manages all the containers as well as deployments.
 
 
 ### Tech stack
