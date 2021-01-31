@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import "dotenv-safe/config";
 
 import express from "express";
 import cors from "cors";
@@ -21,11 +22,14 @@ async function main() {
   const app = express();
 
   const RedisStore = connectRedis(session);
-  const redis = new Redis();
+  const redis = new Redis(process.env.REDIS_URL);
+
+  // tell express that we have a proxy setting in front
+  app.set("trust proxy", 1);
 
   app.use(
     cors({
-      origin: "http://localhost:3000",
+      origin: process.env.CORS_ORIGIN,
       credentials: true,
     })
   );
@@ -42,9 +46,10 @@ async function main() {
         httpOnly: true,
         sameSite: "lax",
         secure: isProd,
+        domain: isProd ? ".chorbo.rocks" : undefined,
       },
       saveUninitialized: false,
-      secret: "lhdakjfhaskjdhfajksdf", // literally just stroke the keyboard for now
+      secret: process.env.SESSION_SECRET,
       resave: false,
     })
   );
@@ -64,7 +69,8 @@ async function main() {
 
   apolloServer.applyMiddleware({ app, cors: false });
 
-  app.listen(4000, () => console.log("Server started on localhost:4000"));
+  const port = parseInt(process.env.PORT);
+  app.listen(port, () => console.log(`Server started on localhost:${port}`));
 }
 
 main().catch((err) => console.log(err));
