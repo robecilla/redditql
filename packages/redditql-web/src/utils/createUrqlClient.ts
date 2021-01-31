@@ -5,7 +5,12 @@ import {
   gql,
   stringifyVariables,
 } from "urql";
-import { cacheExchange, Resolver, Cache } from "@urql/exchange-graphcache";
+import {
+  cacheExchange,
+  Resolver,
+  Cache,
+  Variables,
+} from "@urql/exchange-graphcache";
 import {
   DeletePostMutationVariables,
   LoginMutation,
@@ -70,8 +75,8 @@ const cursorPagination = (): Resolver => {
   };
 };
 
-function vote(args: UpdootMutationVariables, cache: Cache, vote: boolean) {
-  const { postId } = args;
+function vote(args: Variables, cache: Cache, vote: boolean) {
+  const { postId } = args as UpdootMutationVariables;
   const data = cache.readFragment(
     gql`
       fragment _ on Post {
@@ -109,13 +114,13 @@ function invalidateAllPosts(cache: Cache) {
 }
 
 export const createUrqlClient = (ssrExchange, ctx) => ({
-  url: "http://localhost:4000/graphql",
+  url: process.env.NEXT_PUBLIC_API_URL as string,
   fetchOptions: {
     credentials: "include" as const,
     // forward cookie from browser to graphql server
     headers: isServer()
       ? {
-          cookie: ctx.req.headers.cookie,
+          cookie: ctx?.req?.headers?.cookie,
         }
       : undefined,
   },
