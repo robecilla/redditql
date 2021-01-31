@@ -1,6 +1,6 @@
 # redditql
 
-This is a full-stack reddit like application which constists of:
+This is a full-stack reddit like application that constists of:
 - Next.js frontend deployed on Vercel.
 - Backend deployed on a prebuilt Dokku droplet on Digital Ocean VPS. 
 
